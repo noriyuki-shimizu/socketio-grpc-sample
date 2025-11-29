@@ -18,61 +18,70 @@ export interface IncomingChunk {
   isFinal: boolean;
 }
 
-export const useChatStore = defineStore('chat', {
-  state: () => ({
-    messages: [] as ChatMessage[],
-    mode: 'fast' as ChatMode,
-    streamingMessageId: null as string | null,
-    lastError: ''
-  }),
-  actions: {
-    setMode(mode: ChatMode) {
-      this.mode = mode;
-    },
-    pushUserMessage(content: string, options?: { hasImage?: boolean }) {
-      this.messages.push({
-        id: crypto.randomUUID(),
-        role: 'user',
-        content,
-        status: 'done',
-        createdAt: Date.now(),
-        hasImage: options?.hasImage
-      });
-    },
-    startAssistantMessage() {
-      const id = crypto.randomUUID();
-      this.streamingMessageId = id;
-      this.messages.push({
-        id,
-        role: 'assistant',
-        content: '',
-        status: 'streaming',
-        createdAt: Date.now()
-      });
-      return id;
-    },
-    applyChunk(chunk: IncomingChunk) {
-      if (!this.streamingMessageId) {
-        this.startAssistantMessage();
-      }
-      const target = this.messages.find((msg) => msg.id === this.streamingMessageId);
-      if (!target) return;
-      target.content += chunk.content;
-      if (chunk.isFinal) {
-        target.status = 'done';
-        this.streamingMessageId = null;
-      }
-    },
-    pushError(message: string) {
-      this.lastError = message;
-      if (!message) return;
-      this.messages.push({
-        id: crypto.randomUUID(),
-        role: 'system',
-        content: message,
-        status: 'error',
-        createdAt: Date.now()
-      });
+export const useChatStore = defineStore('chat', () => {
+  const messages = ref<ChatMessage[]>([]);
+  const mode = ref<ChatMode>('fast');
+  const streamingMessageId = ref<string | null>(null);
+  const lastError = ref<string>('');
+
+  function setMode(newMode: ChatMode) {
+    mode.value = newMode;
+  }
+  function pushUserMessage(content: string, options?: { hasImage?: boolean }) {
+    messages.value.push({
+      id: crypto.randomUUID(),
+      role: 'user',
+      content,
+      status: 'done',
+      createdAt: Date.now(),
+      hasImage: options?.hasImage
+    });
+  }
+  function startAssistantMessage() {
+    const id = crypto.randomUUID();
+    streamingMessageId.value = id;
+    messages.value.push({
+      id,
+      role: 'assistant',
+      content: '',
+      status: 'streaming',
+      createdAt: Date.now()
+    });
+    return id;
+  }
+  function applyChunk(chunk: IncomingChunk) {
+    if (!streamingMessageId.value) {
+      startAssistantMessage();
     }
+    const target = messages.value.find((msg) => msg.id === streamingMessageId.value);
+    if (!target) return;
+    target.content += chunk.content;
+    if (chunk.isFinal) {
+      target.status = 'done';
+      streamingMessageId.value = null;
+    }
+  }
+  function pushError(message: string) {
+    lastError.value = message;
+    if (!message) return;
+    messages.value.push({
+      id: crypto.randomUUID(),
+      role: 'system',
+      content: message,
+      status: 'error',
+      createdAt: Date.now()
+    });
+  }
+
+  return {
+    messages,
+    mode,
+    streamingMessageId,
+    lastError,
+    setMode,
+    pushUserMessage,
+    startAssistantMessage,
+    applyChunk,
+    pushError
   }
 });
