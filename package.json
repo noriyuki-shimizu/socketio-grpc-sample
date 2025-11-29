@@ -1,0 +1,30 @@
+{
+  "name": "socketio-grpc-sample",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Realtime AI chat sample with Nuxt, Socket.io, gRPC, and Gemini Pro Vision",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n server,web \"npm run dev --workspace @socketio-grpc-sample/server\" \"npm run dev --workspace @socketio-grpc-sample/web\"",
+    "dev:server": "npm run dev --workspace @socketio-grpc-sample/server",
+    "dev:web": "npm run dev --workspace @socketio-grpc-sample/web",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "npm run format --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "workspaces": [
+    "apps/web",
+    "apps/server"
+  ],
+  "keywords": [
+    "nuxt3",
+    "socket.io",
+    "grpc",
+    "gemini"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

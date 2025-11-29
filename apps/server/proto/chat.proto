@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package chat;
+
+service ChatService {
+  rpc StreamReply (ChatRequest) returns (stream ChatChunk) {}
+}
+
+message ChatRequest {
+  string session_id = 1;
+  string mode = 2; // fast | quality
+  bytes image_webp = 3;
+  string prompt = 4;
+}
+
+message ChatChunk {
+  string session_id = 1;
+  string content = 2;
+  bool is_final = 3;
+}
